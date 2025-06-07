@@ -116,7 +116,7 @@
       if (!apiKey) return alert("Please enter your OpenAI API key.");
       if (!base64Image) return alert("Please upload an image first.");
 
-      const prompt = "Extract all visible golf stats as a JSON object. No explanation. Output JSON only.";
+      const prompt = "Extract ALL golf stats from this image as RAW JSON. Format: {\"player\": \"name\", \"stats\": {stat1: value1, stat2: value2...}}. Return ONLY raw JSON. No explanation.";
 
       const messages = [{
         role: "user",
@@ -142,19 +142,18 @@
 
         const data = await res.json();
         const content = data.choices?.[0]?.message?.content || "";
-        debug.textContent = content;
+        debug.textContent = "🧠 GPT Response:\n" + content;
 
-        const jsonMatch = content.match(/{[\s\S]*}/);
-        if (!jsonMatch) throw new Error("No JSON block found in response.");
+        const match = content.match(/\{[\s\S]*\}/);
+        if (!match) throw new Error("No JSON block found in response.");
 
-        const cleaned = jsonMatch[0].replace(/[“”]/g, '"').trim();
-        const parsed = JSON.parse(cleaned);
-
+        const jsonText = match[0].replace(/[“”]/g, '"');
+        const parsed = JSON.parse(jsonText);
         Object.assign(playerAggregate, parsed);
-        alert("Stats added. You can now upload another image.");
+        alert("✅ Stats added. Upload the next image.");
       } catch (err) {
-        alert("Error: " + err.message);
-        debug.textContent += "\n\nError: " + err.message;
+        alert("❌ Error: " + err.message);
+        debug.textContent += "\n\n❌ Error: " + err.message;
       }
     }
 
@@ -170,7 +169,7 @@
       board.appendChild(row);
       playerAggregate = {};
       preview.innerHTML = "";
-      alert("Player added to leaderboard.");
+      alert("✅ Player added to leaderboard.");
     }
   </script>
 </body>
